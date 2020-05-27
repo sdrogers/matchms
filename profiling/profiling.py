@@ -21,6 +21,7 @@ def apply_my_filters(s):
     return s
 
 module_root = os.path.join(os.path.dirname(__file__), "..")
+# Downloaed from https://gnps-external.ucsd.edu/gnpslibrary/GNPS-LIBRARY.mgf
 spectrums_file = os.path.join("GNPS-LIBRARY.mgf")
 
 # apply my filters to the data
