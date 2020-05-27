@@ -1,4 +1,5 @@
 from .add_compound_name import add_compound_name
+from .add_fingerprint import add_fingerprint
 from .add_losses import add_losses
 from .add_parent_mass import add_parent_mass
 from .add_precursor_mz import add_precursor_mz
@@ -29,6 +30,7 @@ from .SpeciesString import SpeciesString
 
 __all__ = [
     "add_compound_name",
+    "add_fingerprint",
     "add_losses",
     "add_parent_mass",
     "add_precursor_mz",

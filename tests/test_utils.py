@@ -1,7 +1,8 @@
-from matchms.utils import is_valid_inchi
-from matchms.utils import is_valid_inchikey
-from matchms.utils import is_valid_smiles
-from matchms.utils import mol_converter
+import numpy
+
+from matchms.utils import (derive_fingerprint_from_inchi,
+                           derive_fingerprint_from_smiles, is_valid_inchi,
+                           is_valid_inchikey, is_valid_smiles, mol_converter)
 
 
 def test_mol_converter_smiles_to_inchi():
@@ -81,3 +82,17 @@ def test_is_valid_smiles():
         assert is_valid_smiles(smiles), "Expected smiles is True."
     for smiles in smiles_false:
         assert not is_valid_smiles(smiles), "Expected smiles is False."
+
+
+def test_derive_fingerprint_from_smiles():
+    """Test if correct fingerprint is derived from given smiles."""
+    fingerprint = derive_fingerprint_from_smiles("[C+]#C[O-]", "daylight", 16)
+    expected_fingerprint = numpy.array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0])
+    assert numpy.all(fingerprint == expected_fingerprint), "Expected different fingerprint."
+
+
+def test_derive_fingerprint_from_inchi():
+    """Test if correct fingerprint is derived from given inchi."""
+    fingerprint = derive_fingerprint_from_inchi("InChI=1S/C2O/c1-2-3", "daylight", 16)
+    expected_fingerprint = numpy.array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0])
+    assert numpy.all(fingerprint == expected_fingerprint), "Expected different fingerprint."
