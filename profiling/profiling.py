@@ -11,6 +11,7 @@ from matchms.importing import load_from_mgf
 from matchms.similarity import CosineGreedy
 
 
+@profile
 def apply_my_filters(s):
     s = default_filters(s)
     s = add_parent_mass(s)
@@ -20,22 +21,26 @@ def apply_my_filters(s):
     s = require_minimum_number_of_peaks(s, n_required=5)
     return s
 
-module_root = os.path.join(os.path.dirname(__file__), "..")
-spectrums_file = os.path.join("GNPS-LIBRARY.mgf")
+@profile
+def superduperprofiler():
+    module_root = os.path.join(os.path.dirname(__file__), "..")
+    spectrums_file = os.path.join("GNPS-LIBRARY.mgf")
+    
+    # apply my filters to the data
+    spectrums = [apply_my_filters(s) for s in load_from_mgf(spectrums_file)]
+    
+    # omit spectrums that didn't qualify for analysis
+    spectrums = [s for s in spectrums if s is not None]
+    
+    # define similarity function
+    cosine_greedy = CosineGreedy()
+    
+    # this will be a library grouping analysis, so queries = references = spectrums
+    queries = spectrums[:]
+    references = spectrums[:]
+    
+    similarity_matrix = Scores(references=5*references,
+                               queries=5*queries,
+                               similarity_function=cosine_greedy).calculate().scores
 
-# apply my filters to the data
-spectrums = [apply_my_filters(s) for s in load_from_mgf(spectrums_file)]
-
-# omit spectrums that didn't qualify for analysis
-spectrums = [s for s in spectrums if s is not None]
-
-# define similarity function
-cosine_greedy = CosineGreedy()
-
-# this will be a library grouping analysis, so queries = references = spectrums
-queries = spectrums[:]
-references = spectrums[:]
-
-similarity_matrix = Scores(references=5*references,
-                           queries=5*queries,
-                           similarity_function=cosine_greedy).calculate().scores
+superduperprofiler()

@@ -5,6 +5,7 @@ class Spikes:
     """
     Stores arrays of intensities and M/z values, with some checks on their internal consistency.
     """
+    @profile
     def __init__(self, mz=None, intensities=None):
         assert isinstance(mz, numpy.ndarray), "Input argument 'mz' should be a numpy.array."
         assert isinstance(intensities, numpy.ndarray), "Input argument 'intensities' should be a numpy.array."
@@ -30,6 +31,7 @@ class Spikes:
     def __getitem__(self, item):
         return [self.mz, self.intensities][item]
 
+    @profile
     def _is_sorted(self):
         return numpy.all(self.mz[:-1] <= self.mz[1:])
 
