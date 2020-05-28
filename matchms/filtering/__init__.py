@@ -1,6 +1,7 @@
 from .add_adduct import add_adduct
 from .add_losses import add_losses
 from .add_parent_mass import add_parent_mass
+from .add_precursor_mz import add_precursor_mz
 from .correct_charge import correct_charge
 from .default_filters import default_filters
 from .derive_inchi_from_smiles import derive_inchi_from_smiles
@@ -13,6 +14,7 @@ from .harmonize_undefined_smiles import harmonize_undefined_smiles
 from .make_charge_scalar import make_charge_scalar
 from .make_ionmode_lowercase import make_ionmode_lowercase
 from .normalize_intensities import normalize_intensities
+from .reduce_to_number_of_peaks import reduce_to_number_of_peaks
 from .repair_inchi_inchikey_smiles import repair_inchi_inchikey_smiles
 from .require_minimum_number_of_peaks import require_minimum_number_of_peaks
 from .select_by_intensity import select_by_intensity
@@ -26,6 +28,7 @@ __all__ = [
     "add_adduct",
     "add_losses",
     "add_parent_mass",
+    "add_precursor_mz",
     "correct_charge",
     "default_filters",
     "derive_inchi_from_smiles",
@@ -38,6 +41,7 @@ __all__ = [
     "make_charge_scalar",
     "make_ionmode_lowercase",
     "normalize_intensities",
+    "reduce_to_number_of_peaks",
     "repair_inchi_inchikey_smiles",
     "require_minimum_number_of_peaks",
     "select_by_intensity",

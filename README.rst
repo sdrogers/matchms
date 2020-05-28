@@ -1,10 +1,7 @@
-.. image:: readthedocs/_static/matchms.png
-  :width: 600
-  :alt: matchms logo
+.. raw:: html
 
-################################################################################
-matchms
-################################################################################
+    <img src="readthedocs/_static/matchms.png" height="60px" width="380px" alt="matchms" />
+
 Vector representation and similarity measure for mass spectrometry data.
 
 |
@@ -28,7 +25,7 @@ Vector representation and similarity measure for mass spectrometry data.
    * - **Other best practices**
      -
    * - Continuous integration
-     - |Python Build| |Anaconda Build and Publish|
+     - |Anaconda Build| |Anaconda Publish|
    * - Documentation
      - |ReadTheDocs Badge|
    * - Code Quality
@@ -39,7 +36,7 @@ Vector representation and similarity measure for mass spectrometry data.
    :target: https://github.com/matchms/matchms
    :alt: GitHub Badge
 
-.. |License Badge| image:: https://img.shields.io/github/license/citation-file-format/cff-converter-python
+.. |License Badge| image:: https://img.shields.io/github/license/matchms/matchms
    :target: https://github.com/matchms/matchms
    :alt: License Badge
 
@@ -58,10 +55,6 @@ Vector representation and similarity measure for mass spectrometry data.
    :target: https://bestpractices.coreinfrastructure.org/projects/3792
    :alt: CII Best Practices Badge
 
-.. |GitHub Actions Badge| image:: https://github.com/matchms/matchms/workflows/Build%20matchms/badge.svg
-   :target: https://github.com/matchms/matchms/actions?query=workflow%3A%22Build+matchms%22
-   :alt: GitHub Actions Badge
-
 .. |ReadTheDocs Badge| image:: https://readthedocs.org/projects/matchms/badge/?version=latest
     :alt: Documentation Status
     :scale: 100%
@@ -75,14 +68,13 @@ Vector representation and similarity measure for mass spectrometry data.
    :target: https://sonarcloud.io/component_measures?id=matchms_matchms&metric=Coverage&view=list
    :alt: Sonarcloud Coverage
 
-.. |Python Build| image:: https://github.com/matchms/matchms/workflows/Python%20Build/badge.svg
-   :target: https://github.com/matchms/matchms/actions?query=workflow%3A%22Python%20Build%22
-   :alt: Python Build
+.. |Anaconda Build| image:: https://github.com/matchms/matchms/workflows/Anaconda%20Build/badge.svg
+   :target: https://github.com/matchms/matchms/actions?query=workflow%3A%22Anaconda%20Build%22
+   :alt: Anaconda Build
 
-.. |Anaconda Build and Publish| image:: https://github.com/matchms/matchms/workflows/Anaconda%20Build%20and%20Publish/badge.svg
-   :target: https://github.com/matchms/matchms/actions?query=workflow%3A%22Anaconda%20Build%20and%20Publish%22
-   :alt: Anaconda Build and Publish
-
+.. |Anaconda Publish| image:: https://github.com/matchms/matchms/workflows/Anaconda%20Publish/badge.svg
+   :target: https://github.com/matchms/matchms/actions?query=workflow%3A%22Anaconda%20Publish%22
+   :alt: Anaconda Publish
 
 ***********************
 Documentation for users
@@ -95,7 +87,51 @@ Install matchms from Anaconda Cloud with
 
 .. code-block:: console
 
-  conda install --channel nlesc matchms
+  conda install --channel nlesc --channel bioconda --channel conda-forge matchms
+
+Example
+=======
+
+Below is a small example of using matchms to calculate the Cosine score between mass Spectrums in the `tests/pesticides.mgf <https://github.com/matchms/matchms/blob/master/tests/pesticides.mgf>`_ file.
+
+.. code-block:: python
+
+    from matchms.importing import load_from_mgf
+    from matchms.filtering import default_filters
+    from matchms.filtering import normalize_intensities
+    from matchms import calculate_scores
+    from matchms.similarity import CosineGreedy
+
+    # Read spectrums from a MGF formatted file, for other formats see https://matchms.readthedocs.io/en/latest/api/matchms.importing.html 
+    file = load_from_mgf("tests/pesticides.mgf")
+
+    # Apply filters to clean and enhance each spectrum
+    spectrums = []
+    for spectrum in file:
+        # Apply default filter to standardize ion mode, correct charge and more.
+        # Default filter is fully explained at https://matchms.readthedocs.io/en/latest/api/matchms.filtering.html .
+        spectrum = default_filters(spectrum)
+        # Scale peak intensities to maximum of 1
+        spectrum = normalize_intensities(spectrum)
+        spectrums.append(spectrum)
+
+    # Calculate Cosine similarity scores between all spectrums
+    # For other similarity score methods see https://matchms.readthedocs.io/en/latest/api/matchms.similarity.html .
+    scores = calculate_scores(references=spectrums,
+                              queries=spectrums,
+                              similarity_function=CosineGreedy())
+
+    # Print the calculated scores for each spectrum pair
+    for score in scores:
+        (reference, query, score, n_matching) = score
+        # Ignore scores between same spectrum and
+        # pairs which have less than 20 peaks in common
+        if reference != query and n_matching >= 20:
+            print(f"Reference scan id: {reference.metadata['scans']}")
+            print(f"Query scan id: {query.metadata['scans']}")
+            print(f"Score: {score:.4f}")
+            print(f"Number of matching peaks {n_matching}")
+            print("----------------------------")
 
 Glossary of terms
 =================
@@ -147,8 +183,8 @@ To install matchms, do:
 
   git clone https://github.com/matchms/matchms.git
   cd matchms
-  conda env create
-  conda activate matchms
+  conda env create --file conda/environment-dev.yml
+  conda activate matchms-dev
   pip install --editable .
 
 Run the linter with:
@@ -157,11 +193,76 @@ Run the linter with:
 
   prospector
 
+Automatically fix incorrectly sorted imports:
+
+.. code-block:: console
+
+  isort --recursive .
+
+Files will be changed in place and need to be committed manually.
+
 Run tests (including coverage) with:
 
 .. code-block:: console
 
   pytest
+
+
+Conda package
+=============
+
+To build anaconda package locally, do:
+
+.. code-block:: console
+
+  conda deactivate
+  conda env create --file conda/environment-build.yml
+  conda activate matchms-build
+  BUILD_FOLDER=/tmp/matchms/_build
+  rm -rfv $BUILD_FOLDER;mkdir -p $BUILD_FOLDER
+  conda build --numpy 1.18.1 --no-include-recipe -c bioconda -c conda-forge \
+  --croot $BUILD_FOLDER ./conda
+
+If successful, this will yield the built ``matchms`` conda package as
+``matchms-<version>*.tar.bz2`` in ``$BUILD_FOLDER/noarch/``. You can test if
+installation of this conda package works with:
+
+.. code-block:: console
+
+  # make a clean environment
+  conda deactivate
+  cd $(mktemp -d)
+  conda env create --name test python=3.7
+  conda activate test
+
+  conda install \
+    --channel bioconda \
+    --channel conda-forge \
+    --channel file://${CONDA_PREFIX}/noarch/ \
+    matchms
+
+To publish the package on anaconda cloud, do:
+
+.. code-block:: console
+
+  anaconda --token ${{ secrets.ANACONDA_TOKEN }} upload --user nlesc --force $BUILD_FOLDER/noarch/*.tar.bz2
+
+where ``secrets.ANACONDA_TOKEN`` is a token to be generated on the Anaconda Cloud website. This secret should be added to GitHub repository.
+
+
+To remove matchms package from the active environment:
+
+.. code-block:: console
+
+  conda remove matchms
+
+
+To remove matchms-build environment:
+
+.. code-block:: console
+
+  conda env remove --name matchms-build
+
 
 Flowchart
 =========
