@@ -1,6 +1,7 @@
 ```
 $ git clone https://github.com/matchms/matchms.git
-$ git checkout bd588a2
+$ git checkout <some sha>
+$ SHA=`git log --format=%h -n 1`
 $ cd matchms
 $ conda env create --file conda/environment-dev.yml
 $ conda activate matchms-dev
@@ -62,8 +63,8 @@ def test_user_workflow():
 if __name__ == "__main__":
     test_user_workflow()
 
-$ python -m cProfile -o pprof.user_workflow.1 profile_user_workflow.py
-$ pyprof2calltree -i pprof.user_workflow.1 -o cachegrind.out.user_workflow.1
+$ python -m cProfile -o pprof.user_workflow.$SHA profile_user_workflow.py
+$ pyprof2calltree -i pprof.user_workflow.$SHA -o cachegrind.out.user_workflow.$SHA
 $ sudo apt install kcachegrind
 
 ```
