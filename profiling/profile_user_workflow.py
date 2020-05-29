@@ -48,8 +48,7 @@ def profile_user_workflow():
     log_event("loading and filtering")
 
     # this will be a library grouping analysis, so queries = references = spectrums
-    queries = spectrums[:50]
-    references = spectrums[:50]
+    queries = references = spectrums
 
     # define similarity function
     cosine_greedy = CosineGreedy()
@@ -57,7 +56,7 @@ def profile_user_workflow():
     log_event("")
 
     # calculate_scores
-    scores = list(calculate_scores(references,
+    scores = list(calculate_scores(10*references,
                                    queries,
                                    cosine_greedy))
 
