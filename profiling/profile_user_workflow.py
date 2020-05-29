@@ -11,10 +11,17 @@ from matchms.importing import load_from_mgf
 from matchms.similarity import CosineGreedy
 
 
-def test_user_workflow():
+def profile_user_workflow():
 
     def log_event(msg):
         log.append((timer(), msg))
+
+    def print_events():
+        print("duration    description")
+        print("----------- ------------------------------")
+        for index, (t, msg) in enumerate(log):
+            delta_t = t - log[index - 1][0] if index > 0 else 0
+            print("{0:10.3f}: {1}".format(delta_t, msg))
 
     def apply_my_filters(s):
         s = default_filters(s)
@@ -41,8 +48,8 @@ def test_user_workflow():
     log_event("loading and filtering")
 
     # this will be a library grouping analysis, so queries = references = spectrums
-    queries = spectrums[:]
-    references = spectrums[:]
+    queries = spectrums[:50]
+    references = spectrums[:50]
 
     # define similarity function
     cosine_greedy = CosineGreedy()
@@ -63,16 +70,12 @@ def test_user_workflow():
     sorted_by_score = sorted(filtered, key=lambda elem: elem[2], reverse=True)
 
     log_event("sorting and filtering results")
-
     log_event("end")
 
-    print("duration    description")
-    print("----------- ------------------------------")
-    for index, (t, msg) in enumerate(log):
-        delta_t = t - log[index - 1][0] if index > 0 else 0
-        print("{0:10.3f}: {1}".format(delta_t, msg))
+    print_events()
+
+    assert sorted_by_score is not None
 
 
 if __name__ == "__main__":
-    test_user_workflow()
-
+    profile_user_workflow()
