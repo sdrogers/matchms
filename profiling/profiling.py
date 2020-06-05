@@ -11,7 +11,8 @@ from matchms.importing import load_from_mgf
 from matchms.similarity import CosineGreedy
 
 
-@profile
+# @profile
+
 def apply_my_filters(s):
     s = default_filters(s)
     s = add_parent_mass(s)
@@ -21,7 +22,8 @@ def apply_my_filters(s):
     s = require_minimum_number_of_peaks(s, n_required=5)
     return s
 
-@profile
+# @profile
+
 def superduperprofiler():
     module_root = os.path.join(os.path.dirname(__file__), "..")
     spectrums_file = os.path.join("GNPS-LIBRARY.mgf")
@@ -39,8 +41,8 @@ def superduperprofiler():
     queries = spectrums[:]
     references = spectrums[:]
     
-    similarity_matrix = Scores(references=5*references,
-                               queries=5*queries,
+    similarity_matrix = Scores(references=references,
+                               queries=queries,
                                similarity_function=cosine_greedy).calculate().scores
 
 superduperprofiler()

@@ -8,7 +8,8 @@ from matchms.typing import ReferencesType
 
 class Scores:
     """An example docstring for a class definition."""
-    @profile
+    # @profile
+
     def __init__(self, references: ReferencesType, queries: QueriesType, similarity_function: Callable):
         """An example docstring for a constructor."""
 
@@ -50,7 +51,8 @@ class Scores:
 
         assert callable(similarity_function), "Expected input argument 'similarity_function' to be callable."
 
-    @profile
+    # @profile
+
     def calculate(self):
         """
         Calculate the similarity between all reference objects v all query objects using a
