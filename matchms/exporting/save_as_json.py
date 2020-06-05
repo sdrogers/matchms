@@ -1,15 +1,19 @@
 import json
+from typing import List
 import numpy
+from ..Spectrum import Spectrum
 
 
-def save_as_json(spectrums, filename):
+def save_as_json(spectrums: List[Spectrum], filename: str):
     """Save spectrum(s) as json file.
 
-    Args:
-    ----
-    spectrums: list of Spectrum() objects, Spectrum() object
-        Expected input are match.Spectrum.Spectrum() objects.
-    filename: str
+    :py:attr:`~matchms.Spectrum.losses` of spectrum will not be saved.
+
+    Arguments:
+    ----------
+    spectrums:
+        Expected input is a list of  :py:class:`~matchms.Spectrum.Spectrum` objects.
+    filename:
         Provide filename to save spectrum(s).
     """
     if not isinstance(spectrums, list):
@@ -18,16 +22,20 @@ def save_as_json(spectrums, filename):
 
     # Write to json file
     with open(filename, 'w') as fout:
-        fout.write("[")
-        for i, spectrum in enumerate(spectrums):
-            spec = spectrum.clone()
+        json.dump(spectrums, fout, cls=SpectrumJSONEncoder)
+
+
+class SpectrumJSONEncoder(json.JSONEncoder):
+    # pylint: disable=method-hidden
+    # See https://github.com/PyCQA/pylint/issues/414 for reference
+    def default(self, o):
+        """JSON Encoder which can encode a :py:class:`~matchms.Spectrum.Spectrum` object"""
+        if isinstance(o, Spectrum):
+            spec = o.clone()
             peaks_list = numpy.vstack((spec.peaks.mz, spec.peaks.intensities)).T.tolist()
 
             # Convert matchms.Spectrum() into dictionaries
             spectrum_dict = {key: spec.metadata[key] for key in spec.metadata}
             spectrum_dict["peaks_json"] = peaks_list
-
-            json.dump(spectrum_dict, fout)
-            if i < len(spectrums) - 1:
-                fout.write(",")
-        fout.write("]")
+            return spectrum_dict
+        return json.JSONEncoder.default(self, o)

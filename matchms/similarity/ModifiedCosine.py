@@ -17,9 +17,9 @@ class ModifiedCosine:
     for further details.
 
     Args:
-    ----
+    -----
     tolerance: float
-        Peaks will be considered a match when <= tolerance appart. Default is 0.1.
+        Peaks will be considered a match when <= tolerance a part. Default is 0.1.
     """
     def __init__(self, tolerance=0.1):
         self.tolerance = tolerance
@@ -27,11 +27,16 @@ class ModifiedCosine:
     def __call__(self, spectrum1: SpectrumType, spectrum2: SpectrumType) -> Tuple[float, int]:
         """Calculate modified cosine score between two spectra.
         Args:
-        ----
+        -----
         spectrum1: SpectrumType
             Input spectrum 1.
         spectrum2: SpectrumType
             Input spectrum 2.
+
+        Returns:
+        --------
+
+        Tuple with cosine score and number of matched peaks.
         """
         def get_peaks_arrays():
             """Get peaks mz and intensities as numpy array."""
@@ -50,9 +55,8 @@ class ModifiedCosine:
             assert spectrum1.get("precursor_mz") and spectrum2.get("precursor_mz"), message
             mass_shift = spectrum1.get("precursor_mz") - spectrum2.get("precursor_mz")
             nonzero_pairs = collect_peak_pairs(spec1, spec2, self.tolerance, shift=mass_shift)
-            matching_pairs = zero_pairs + nonzero_pairs
-            matching_pairs = sorted(matching_pairs, key=lambda x: x[2], reverse=True)
-            return matching_pairs
+            unsorted_matching_pairs = zero_pairs + nonzero_pairs
+            return sorted(unsorted_matching_pairs, key=lambda x: x[2], reverse=True)
 
         def calc_score():
             """Calculate modified cosine score."""
