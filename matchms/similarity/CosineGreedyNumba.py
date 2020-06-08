@@ -1,24 +1,32 @@
-import numba
+from typing import Tuple
 import numpy
+from matchms.similarity.collect_peak_pairs import collect_peak_pairs
 from matchms.typing import SpectrumType
 
 
 class CosineGreedyNumba:
-    """Calculate cosine score between two spectra.
+    """Calculate 'cosine similarity score' between two spectra.
 
-    This score is calculated by summing intensiy products of matching peaks between
-    two spectra (matching within set tolerance).
-    of two spectra.
-
-    Args:
-    ----
-    tolerance: float
-        Peaks will be considered a match when <= tolerance appart. Default is 0.1.
+    The cosine score aims at quantifying the similarity between two mass spectra.
+    The score is calculated by finding best possible matches between peaks
+    of two spectra. Two peaks are considered a potential match if their
+    m/z ratios lie within the given 'tolerance'.
+    The underlying peak assignment problem is here sovled in a 'greedy' way.
+    This can perform notably faster, but does occationally deviate slightly from
+    a fully correct solution (as with the Hungarian algorithm). In practice this
+    will rarely affect similarity scores notably, in particular for smaller
+    tolerances.
     """
-    def __init__(self, tolerance=0.3):
+    def __init__(self, tolerance=0.1):
+        """
+        Args:
+        ----
+        tolerance: float
+            Peaks will be considered a match when <= tolerance appart. Default is 0.1.
+        """
         self.tolerance = tolerance
 
-    def __call__(self, spectrum1: SpectrumType, spectrum2: SpectrumType) -> float:
+    def __call__(self, spectrum1: SpectrumType, spectrum2: SpectrumType) -> Tuple[float, int]:
         """Calculate cosine score between two spectra.
         Args:
         ----
@@ -39,7 +47,7 @@ class CosineGreedyNumba:
 
         def get_matching_pairs():
             """Get pairs of peaks that match within the given tolerance."""
-            matching_pairs = find_pairs_numba(spec1, spec2, self.tolerance, shift=0.0)
+            matching_pairs = collect_peak_pairs(spec1, spec2, self.tolerance, shift=0.0)
             matching_pairs = sorted(matching_pairs, key=lambda x: x[2], reverse=True)
             return matching_pairs
 
@@ -62,34 +70,3 @@ class CosineGreedyNumba:
         spec1, spec2 = get_peaks_arrays()
         matching_pairs = get_matching_pairs()
         return calc_score()
-
-
-@numba.njit
-def find_pairs_numba(spec1, spec2, tolerance, shift=0):
-    """Find matching pairs between two spectra.
-
-    Args
-    ----
-    spec1: numpy array
-        Spectrum peaks and intensities as numpy array.
-    spec2: numpy array
-        Spectrum peaks and intensities as numpy array.
-    tolerance : float
-        Peaks will be considered a match when <= tolerance appart.
-    shift : float, optional
-        Shift spectra peaks by shift. The default is 0.
-
-    Returns
-    -------
-    matching_pairs : list
-        List of found matching peaks.
-    """
-    matching_pairs = []
-
-    for idx in range(len(spec1)):
-        intensity = spec1[idx, 1]
-        matches = numpy.where((numpy.abs(spec2[:, 0] - spec1[idx, 0] + shift) <= tolerance))[0]
-        for match in matches:
-            matching_pairs.append((idx, match, intensity*spec2[match][1]))
-
-    return matching_pairs
