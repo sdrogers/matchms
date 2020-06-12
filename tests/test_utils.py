@@ -1,8 +1,10 @@
 import numpy
-
-from matchms.utils import (derive_fingerprint_from_inchi,
-                           derive_fingerprint_from_smiles, is_valid_inchi,
-                           is_valid_inchikey, is_valid_smiles, mol_converter)
+from matchms.utils import derive_fingerprint_from_inchi
+from matchms.utils import derive_fingerprint_from_smiles
+from matchms.utils import is_valid_inchi
+from matchms.utils import is_valid_inchikey
+from matchms.utils import is_valid_smiles
+from matchms.utils import mol_converter
 
 
 def test_mol_converter_smiles_to_inchi():
@@ -26,6 +28,11 @@ def test_mol_converter_smiles_to_inchikey():
     assert output_inchikey == "HULABQRTZQYJBQ-UHFFFAOYSA-N"
 
 
+def test_mol_converter_invalid_input():
+    """Test invalid entry."""
+    assert mol_converter("invalid_test", "smiles", "inchikey") is None, "Expected None."
+
+
 def test_is_valid_inchikey():
     """Test if strings are correctly classified."""
     inchikeys_true = ["XYLJNLCSTIOKRM-UHFFFAOYSA-N"]
@@ -45,6 +52,11 @@ def test_is_valid_inchikey():
         assert not is_valid_inchikey(inchikey), "Expected inchikey is False."
 
 
+def test_is_valid_inchikey_none_input():
+    """Test None entry."""
+    assert not is_valid_inchikey(None), "Expected None entry to give False."
+
+
 def test_is_valid_inchi():
     """Test if strings are correctly classified."""
     inchi_true = [
@@ -62,6 +74,11 @@ def test_is_valid_inchi():
         assert is_valid_inchi(inchi), "Expected inchi is True."
     for inchi in inchi_false:
         assert not is_valid_inchi(inchi), "Expected inchi is False."
+
+
+def test_is_valid_inchi_none_input():
+    """Test None entry."""
+    assert not is_valid_inchi(None), "Expected None entry to give False."
 
 
 def test_is_valid_smiles():
@@ -84,6 +101,11 @@ def test_is_valid_smiles():
         assert not is_valid_smiles(smiles), "Expected smiles is False."
 
 
+def test_is_valid_smiles_none_input():
+    """Test None entry."""
+    assert not is_valid_smiles(None), "Expected None entry to give False."
+
+
 def test_derive_fingerprint_from_smiles():
     """Test if correct fingerprint is derived from given smiles."""
     fingerprint = derive_fingerprint_from_smiles("[C+]#C[O-]", "daylight", 16)
@@ -96,3 +118,18 @@ def test_derive_fingerprint_from_inchi():
     fingerprint = derive_fingerprint_from_inchi("InChI=1S/C2O/c1-2-3", "daylight", 16)
     expected_fingerprint = numpy.array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0])
     assert numpy.all(fingerprint == expected_fingerprint), "Expected different fingerprint."
+
+
+def test_derive_fingerprint_different_types_from_smiles():
+    """Test if correct fingerprints are derived from given smiles when using different types."""
+    types = ["daylight", "morgan1", "morgan2", "morgan3"]
+    expected_fingerprints = [
+        numpy.array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0]),
+        numpy.array([0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1]),
+        numpy.array([0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1]),
+        numpy.array([0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1])
+    ]
+
+    for i, fingerprint_type in enumerate(types):
+        fingerprint = derive_fingerprint_from_smiles("[C+]#C[O-]", fingerprint_type, 16)
+        assert numpy.all(fingerprint == expected_fingerprints[i]), "Expected different fingerprint."

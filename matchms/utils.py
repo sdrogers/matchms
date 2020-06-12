@@ -22,8 +22,8 @@ def mol_converter(mol_input: str, input_type: str, output_type: str) -> Optional
 
     Convert from "smiles" or "inchi" to "inchi", "smiles", or "inchikey".
 
-    Args:
-    -----
+    Parameters
+    ----------
     mol_input
         Input data in "inchi" or "smiles" molecular representation.
     input_type
@@ -57,8 +57,8 @@ def is_valid_inchi(inchi: str) -> bool:
 
     This functions test if string can be read by rdkit as InChI.
 
-    Args:
-    -----
+    Parameters
+    ----------
     inchi
         Input string to test if it has format of InChI.
     """
@@ -81,8 +81,8 @@ def is_valid_smiles(smiles: str) -> bool:
 
     This functions test if string can be read by rdkit as smiles.
 
-    Args:
-    -----
+    Parameters
+    ----------
     smiles
         Input string to test if it can be imported as smiles.
     """
@@ -100,7 +100,13 @@ def is_valid_smiles(smiles: str) -> bool:
 
 
 def is_valid_inchikey(inchikey: str) -> bool:
-    """Return True if string has format of inchikey."""
+    """Return True if string has format of inchikey.
+
+    Parameters
+    ----------
+    inchikey
+        Input string to test if it format of an inchikey.
+    """
     if inchikey is None:
         return False
 
@@ -110,36 +116,23 @@ def is_valid_inchikey(inchikey: str) -> bool:
     return False
 
 
-def looks_like_adduct(adduct):
-    """Return True if input string has expected format of an adduct."""
-    if not isinstance(adduct, str):
-        return False
-    adduct = adduct.strip().replace("*", "")
-
-    # Format 1, e.g. "[2M-H]" or "[2M+Na]+"
-    regexp1 = r"^\[(([0-9]M)|(M[0-9])|(M)|(MBr)|(MCl))[+-0-9][A-Z0-9\+\-\(\)|(Na)|(Ca)|(Mg)|(Cl)|(Li)|(Br)|(Ser)]{1,}[\]0-9+-]{1,4}"
-    # Format 2, e.g. "M+Na+K" or "M+H-H20"
-    regexp2 = r"^(([0-9]M)|(M[0-9])|(M)|(MBr)|(MCl))[+-0-9][A-Z0-9\+\-\(\)|(Na)|(Ca)|(Mg)|(Cl)|(Li)|(Br)|(Ser)]{1,}"
-    return re.search(regexp1, adduct) is not None or re.search(regexp2, adduct) is not None
-
-
-def derive_fingerprint_from_smiles(smiles, fingerprint_type, nbits):
+def derive_fingerprint_from_smiles(smiles: str, fingerprint_type: str, nbits: int) -> numpy.ndarray:
     """Calculate molecule fingerprint based on given smiles or inchi (using rdkit).
 
-    Args:
-    --------
-    smiles: str
+    Parameters
+    ----------
+    smiles
         Input smiles to derive fingerprint from.
-    fingerprint_type: str
+    fingerprint_type
         Determine method for deriving molecular fingerprints. Supported choices are 'daylight',
         'morgan1', 'morgan2', 'morgan3'.
-    nbits: int
+    nbits
         Dimension or number of bits of generated fingerprint.
 
     Returns
     -------
-    fingerprint: numpy array
-        Molecular fingerprint
+    fingerprint
+        Molecular fingerprint.
     """
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
@@ -147,23 +140,23 @@ def derive_fingerprint_from_smiles(smiles, fingerprint_type, nbits):
     return mol_to_fingerprint(mol, fingerprint_type, nbits)
 
 
-def derive_fingerprint_from_inchi(inchi, fingerprint_type, nbits):
+def derive_fingerprint_from_inchi(inchi: str, fingerprint_type: str, nbits: int) -> numpy.ndarray:
     """Calculate molecule fingerprint based on given inchi (using rdkit).
 
-    Args:
-    --------
-    inchi: str
+    Parameters
+    ----------
+    inchi
         Input InChI to derive fingerprint from.
-    fingerprint_type: str
+    fingerprint_type
         Determine method for deriving molecular fingerprints. Supported choices are 'daylight',
         'morgan1', 'morgan2', 'morgan3'.
-    nbits: int
+    nbits
         Dimension or number of bits of generated fingerprint.
 
     Returns
     -------
-    fingerprint: numpy array
-        Molecular fingerprint
+    fingerprint: numpy.array
+        Molecular fingerprint.
     """
     mol = Chem.MolFromInchi(inchi)
     if mol is None:
@@ -171,18 +164,23 @@ def derive_fingerprint_from_inchi(inchi, fingerprint_type, nbits):
     return mol_to_fingerprint(mol, fingerprint_type, nbits)
 
 
-def mol_to_fingerprint(mol, fingerprint_type, nbits):
+def mol_to_fingerprint(mol: Chem.rdchem.Mol, fingerprint_type: str, nbits: int) -> numpy.ndarray:
     """Convert rdkit mol (molecule) to molecular fingerprint.
 
-    Args:
-    ----
-    mol : rdkit molecule
+    Parameters
+    ----------
+    mol
         Input rdkit molecule.
-    fingerprint_type : str
+    fingerprint_type
         Determine method for deriving molecular fingerprints.
         Supported choices are 'daylight', 'morgan1', 'morgan2', 'morgan3'.
-    nbits: int
+    nbits
         Dimension or number of bits of generated fingerprint.
+
+    Returns
+    -------
+    fingerprint
+        Molecular fingerprint.
     """
     assert fingerprint_type in ["daylight", "morgan1", "morgan2", "morgan3"], "Unkown fingerprint type given."
 
@@ -198,3 +196,16 @@ def mol_to_fingerprint(mol, fingerprint_type, nbits):
     if fp:
         return numpy.array(fp)
     return None
+
+
+def looks_like_adduct(adduct):
+    """Return True if input string has expected format of an adduct."""
+    if not isinstance(adduct, str):
+        return False
+    adduct = adduct.strip().replace("*", "")
+
+    # Format 1, e.g. "[2M-H]" or "[2M+Na]+"
+    regexp1 = r"^\[(([0-9]M)|(M[0-9])|(M)|(MBr)|(MCl))[+-0-9][A-Z0-9\+\-\(\)|(Na)|(Ca)|(Mg)|(Cl)|(Li)|(Br)|(Ser)]{1,}[\]0-9+-]{1,4}"
+    # Format 2, e.g. "M+Na+K" or "M+H-H20"
+    regexp2 = r"^(([0-9]M)|(M[0-9])|(M)|(MBr)|(MCl))[+-0-9][A-Z0-9\+\-\(\)|(Na)|(Ca)|(Mg)|(Cl)|(Li)|(Br)|(Ser)]{1,}"
+    return re.search(regexp1, adduct) is not None or re.search(regexp2, adduct) is not None
